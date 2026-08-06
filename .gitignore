@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Raw CORDIS dumps are re-fetched with src/fetch_cordis.py, not versioned.
+# Only the provenance record is tracked.
+data/raw/*
+!data/raw/PROVENANCE.json
