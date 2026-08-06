@@ -1,0 +1,18 @@
+{
+  "HORIZON": {
+    "url": "https://cordis.europa.eu/data/cordis-HORIZONprojects-csv.zip",
+    "file": "cordis-HORIZONprojects-csv.zip",
+    "retrieved_utc": "2026-08-06T21:17:25+00:00",
+    "last_modified": "Tue, 21 Jul 2026 07:32:07 GMT",
+    "etag": "\"6a5f2077-22b8474\"",
+    "content_length": "36406388"
+  },
+  "H2020": {
+    "url": "https://cordis.europa.eu/data/cordis-h2020projects-csv.zip",
+    "file": "cordis-h2020projects-csv.zip",
+    "retrieved_utc": "2026-08-06T21:17:25+00:00",
+    "last_modified": "Tue, 21 Jul 2026 07:23:06 GMT",
+    "etag": "\"6a5f1e5a-34bcf91\"",
+    "content_length": "55299985"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "built_utc": "2026-08-06T21:22:54+00:00",
+  "provenance": {
+    "HORIZON": {
+      "url": "https://cordis.europa.eu/data/cordis-HORIZONprojects-csv.zip",
+      "file": "cordis-HORIZONprojects-csv.zip",
+      "retrieved_utc": "2026-08-06T21:17:25+00:00",
+      "last_modified": "Tue, 21 Jul 2026 07:32:07 GMT",
+      "etag": "\"6a5f2077-22b8474\"",
+      "content_length": "36406388"
+    },
+    "H2020": {
+      "url": "https://cordis.europa.eu/data/cordis-h2020projects-csv.zip",
+      "file": "cordis-h2020projects-csv.zip",
+      "retrieved_utc": "2026-08-06T21:17:25+00:00",
+      "last_modified": "Tue, 21 Jul 2026 07:23:06 GMT",
+      "etag": "\"6a5f1e5a-34bcf91\"",
+      "content_length": "55299985"
+    }
+  },
+  "german_participations": 36853,
+  "nrw_participations": 6475,
+  "nrw_matched_by_city_fallback": 2,
+  "german_rows_missing_nuts_unmatched": 167,
+  "nrw_projects": 4969,
+  "nrw_organisations": 1104,
+  "nrw_ec_contribution_eur": 3541965205.0199995,
+  "german_ec_contribution_eur": 19894284370.219997,
+  "by_programme": {
+    "Horizon 2020": {
+      "nrw_participations": 3764,
+      "nrw_ec_contribution_eur": 1820768515.8
+    },
+    "Horizon Europe": {
+      "nrw_participations": 2711,
+      "nrw_ec_contribution_eur": 1721196689.2200003
+    }
+  }
+}
