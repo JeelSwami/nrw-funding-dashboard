@@ -28,8 +28,9 @@ GRID = "#e1e0d9"
 SURFACE = "#fcfcfb"
 FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif'
 
-st.set_page_config(page_title="EU research funding in NRW",
-                   page_icon=":bar_chart:", layout="wide")
+st.set_page_config(
+    page_title="EU research funding flow in North Rhine-Westphalia",
+    page_icon=":bar_chart:", layout="wide")
 
 
 def _fingerprint(*paths):
@@ -51,6 +52,12 @@ def load(fingerprint):
 def load_population(fingerprint):
     return json.loads(
         (DATA.parent / "reference" / "population_nuts1.json").read_text())
+
+
+@st.cache_data
+def load_dfg(fingerprint):
+    return json.loads(
+        (DATA.parent / "reference" / "dfg_foerderatlas.json").read_text())
 
 
 def eur(x: float) -> str:
@@ -133,7 +140,7 @@ de, fields, collab, summary = load(_fingerprint(
     DATA / "collab_edges.parquet", DATA / "summary.json"))
 nrw_all = de[de["is_nrw"]]
 
-st.title("Where does EU research funding flow in North Rhine-Westphalia?")
+st.title("EU research funding flow in North Rhine-Westphalia, Germany")
 snapshot = summary["provenance"].get("HORIZON", {}).get("last_modified", "")
 
 with st.sidebar:
@@ -334,6 +341,109 @@ st.caption(
     "organisations' legal seats (e.g. Bremen) rank high because funding "
     "counts at the registered address. The city filter does not apply here.")
 
+# --- DFG comparison ---------------------------------------------------------
+st.subheader("DFG and EU funding side by side")
+dfg = load_dfg(_fingerprint(DATA.parent / "reference" / "dfg_foerderatlas.json"))
+
+# Same reporting window as the Foerderatlas: projects starting 2020-2022.
+window = de[de["start_year"].between(2020, 2022)]
+dfg_nrw = dfg["laender_meur"]["Nordrhein-Westfalen"]
+dfg_share = dfg_nrw / sum(dfg["laender_meur"].values())
+eu_de_window = window["ecContribution"].sum()
+eu_share = (window.loc[window["is_nrw"], "ecContribution"].sum()
+            / eu_de_window if eu_de_window else 0)
+c_dfg1, c_dfg2, c_dfg3 = st.columns(3)
+c_dfg1.metric("DFG awards to NRW, 2020–2022", f"€{dfg_nrw / 1e3:.2f} bn",
+              help="DFG Förderatlas 2024, all NRW institutions.")
+c_dfg2.metric("NRW share of DFG awards", f"{dfg_share:.1%}",
+              help="Share of DFG awards 2020–2022 across the 16 Länder.")
+c_dfg3.metric("NRW share of EU funding, same window", f"{eu_share:.1%}",
+              help="Share of EU contributions to German participants in "
+                   "projects starting 2020–2022.")
+
+# University-level pairing. EU-side groups add the university hospital to
+# its university, since the DFG figures include the medical faculties.
+UNI_GROUPS = {
+    "Aachen TH": ("RWTH Aachen",
+                  ["rheinisch-westfalische technische hochschule",
+                   "rwth aachen", "universitatsklinikum aachen"]),
+    "Bonn U": ("Uni Bonn", ["friedrich-wilhelms-universitat bonn",
+                            "universitatsklinikum bonn"]),
+    "Köln U": ("Uni Köln", ["universitat zu koln"]),
+    "Münster U": ("Uni Münster", ["universitat munster",
+                                  "universitatsklinikum munster"]),
+    "Bochum U": ("RU Bochum", ["ruhr-universitat bochum"]),
+    "Duisburg-Essen U": ("Uni Duisburg-Essen",
+                         ["duisburg-essen", "universitatsklinikum essen"]),
+    "Düsseldorf U": ("Uni Düsseldorf", ["heinrich-heine",
+                                        "universitatsklinikum dusseldorf"]),
+    "Dortmund TU": ("TU Dortmund", ["technische universitat dortmund"]),
+    "Bielefeld U": ("Uni Bielefeld", ["universitat bielefeld"]),
+}
+
+
+def _fold(s: str) -> str:
+    import unicodedata
+    s = unicodedata.normalize("NFKD", (s or "").lower())
+    s = "".join(c for c in s if not unicodedata.combining(c))
+    for a, b in (("ae", "a"), ("oe", "o"), ("ue", "u"), ("ss", "s")):
+        s = s.replace(a, b)
+    return s
+
+
+nrw_window = window[window["is_nrw"]].copy()
+folded = nrw_window["name"].map(_fold)
+# Legally separate affiliated institutes ("... an der Universitaet X") are
+# not part of the university in the DFG figures either.
+not_affiliate = ~folded.str.contains(" an der ", regex=False)
+rows_dfg = []
+for dfg_name, (display, patterns) in UNI_GROUPS.items():
+    mask = (folded.str.contains("|".join(_fold(p) for p in patterns),
+                                regex=True) & not_affiliate)
+    rows_dfg.append({
+        "uni": display,
+        "DFG": dfg["universities_meur"].get(dfg_name, 0.0),
+        "EU": nrw_window.loc[mask, "ecContribution"].sum() / 1e6,
+    })
+cmp_df = pd.DataFrame(rows_dfg).sort_values("DFG")
+dfg_fig = go.Figure()
+dfg_fig.add_bar(y=cmp_df["uni"], x=cmp_df["DFG"], orientation="h",
+                name="DFG awards 2020–2022", marker=dict(color="#1baf7a"),
+                text=[f"€{v:,.0f} m" for v in cmp_df["DFG"]],
+                textposition="outside", textfont=dict(size=11),
+                cliponaxis=False,
+                hovertemplate="%{y}<br>DFG: €%{x:,.1f} m<extra></extra>")
+dfg_fig.add_bar(y=cmp_df["uni"], x=cmp_df["EU"], orientation="h",
+                name="EU contribution, projects starting 2020–2022",
+                marker=dict(color=BLUE),
+                text=[f"€{v:,.0f} m" for v in cmp_df["EU"]],
+                textposition="outside", textfont=dict(size=11),
+                cliponaxis=False,
+                hovertemplate="%{y}<br>EU: €%{x:,.1f} m<extra></extra>")
+dfg_fig.update_layout(barmode="group", bargap=0.25,
+                      legend=dict(orientation="h", y=1.08,
+                                  font=dict(color=INK_2)))
+dfg_fig.update_xaxes(visible=False,
+                     range=[0, float(cmp_df["DFG"].max()) * 1.18])
+dfg_fig.update_yaxes(showgrid=False)
+dfg_fig = style(dfg_fig, 500)
+dfg_fig.update_layout(margin=dict(l=8, r=64, t=8, b=8))
+st.plotly_chart(dfg_fig, config={"displayModeBar": False})
+st.caption(
+    "NRW universities in the DFG Förderatlas top 40, matched to their EU "
+    "funding over the same 2020–2022 window (university hospitals counted "
+    "with their university on both sides). DFG figures are awards "
+    "(Bewilligungen); EU figures are committed contributions for projects "
+    "starting in the window — related but not identical concepts. "
+    "© Deutsche Forschungsgemeinschaft, Förderatlas 2024. The filter row "
+    "does not apply here.")
+if show_tables:
+    st.dataframe(cmp_df.sort_values("DFG", ascending=False)
+                 .rename(columns={"uni": "University",
+                                  "DFG": "DFG 2020–22 (€ m)",
+                                  "EU": "EU 2020–22 (€ m)"})
+                 .round(1), hide_index=True)
+
 # --- Collaboration network --------------------------------------------------
 st.subheader("Who does NRW collaborate with?")
 top_nrw = (collab.drop_duplicates("nrw_org_id")
@@ -495,8 +605,8 @@ with d1:
 with d2:
     snap_short = " ".join(snapshot.split()[1:4]) if snapshot else "latest"
     st.code(
-        "Swami, J. (2026). Where does EU research funding flow\n"
-        "in North Rhine-Westphalia? Interactive dashboard.\n"
+        "Swami, J. (2026). EU research funding flow in\n"
+        "North Rhine-Westphalia, Germany. Interactive dashboard.\n"
         f"Data: CORDIS, EU Publications Office (snapshot {snap_short}).\n"
         f"{APP_URL}", language=None)
 
@@ -537,6 +647,18 @@ corrected attribution throughout.
 projects carry several field tags. Funding per field splits each
 participation's contribution equally across its project's distinct top-level
 fields, so field totals sum to the overall total.
+
+**DFG comparison.** DFG figures come from the published Förderatlas 2024
+tables ([per university](https://foerderatlas.dfg.de/daten/dfg-bewilligungen-fuer-2020-bis-2022-nach-hochschulen-und-fachgebieten/),
+[per Land](https://foerderatlas.dfg.de/daten/dfg-bewilligungen-fuer-2020-bis-2022-nach-bundeslaendern-und-wissenschaftsbereichen/);
+© Deutsche Forschungsgemeinschaft), covering awards made 2020–2022; the
+university table lists the 40 universities with the highest awards. EU
+figures for the comparison are contributions committed to projects starting
+2020–2022. On both sides a university group includes its university
+hospital; legally separate affiliated institutes are excluded. Awards and
+commitments are related but distinct measures, and the DFG funds
+individuals and infrastructure in ways the EU does not — the comparison
+shows orders of magnitude and shares, not a like-for-like ledger.
 
 **Per-inhabitant comparison.** Population figures come from Eurostat,
 dataset [demo_r_d2jan](https://ec.europa.eu/eurostat/databrowser/product/view/demo_r_d2jan)
