@@ -14,6 +14,10 @@ the state (helped by DLR's legal seat there), followed by Bonn, Aachen and
 Jülich; natural sciences and engineering together account for over half of
 the field-attributed funding.
 
+![Dashboard overview: filters, key figures and funding by start year](docs/screenshot-overview.png)
+
+![Collaboration network of the largest NRW recipients and their European partners](docs/screenshot-network.png)
+
 ## Quickstart
 
 ```
