@@ -2,7 +2,7 @@
   "source": "Eurostat, demo_r_d2jan (population on 1 January), NUTS-1",
   "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/demo_r_d2jan?format=JSON&lang=EN&sex=T&age=TOTAL&sinceTimePeriod=2020&geo=DE1&geo=DE2&geo=DE3&geo=DE4&geo=DE5&geo=DE6&geo=DE7&geo=DE8&geo=DE9&geo=DEA&geo=DEB&geo=DEC&geo=DED&geo=DEE&geo=DEF&geo=DEG",
   "license": "CC BY 4.0 (Eurostat reuse policy)",
-  "retrieved_utc": "2026-08-07T12:52:42+00:00",
+  "retrieved_utc": "2026-08-07T13:00:51+00:00",
   "reference_year": {
     "DE1": "2025",
     "DE2": "2025",

@@ -2,17 +2,17 @@
   "HORIZON": {
     "url": "https://cordis.europa.eu/data/cordis-HORIZONprojects-csv.zip",
     "file": "cordis-HORIZONprojects-csv.zip",
-    "retrieved_utc": "2026-08-06T21:17:25+00:00",
-    "last_modified": "Tue, 21 Jul 2026 07:32:07 GMT",
-    "etag": "\"6a5f2077-22b8474\"",
-    "content_length": "36406388"
+    "retrieved_utc": "2026-08-07T13:00:42+00:00",
+    "last_modified": "Thu, 06 Aug 2026 14:02:10 GMT",
+    "etag": "\"6a7493e2-22f920f\"",
+    "content_length": "36672015"
   },
   "H2020": {
     "url": "https://cordis.europa.eu/data/cordis-h2020projects-csv.zip",
     "file": "cordis-h2020projects-csv.zip",
-    "retrieved_utc": "2026-08-06T21:17:25+00:00",
-    "last_modified": "Tue, 21 Jul 2026 07:23:06 GMT",
-    "etag": "\"6a5f1e5a-34bcf91\"",
-    "content_length": "55299985"
+    "retrieved_utc": "2026-08-07T13:00:50+00:00",
+    "last_modified": "Thu, 06 Aug 2026 14:04:05 GMT",
+    "etag": "\"6a749455-34ad42a\"",
+    "content_length": "55235626"
   }
 }
