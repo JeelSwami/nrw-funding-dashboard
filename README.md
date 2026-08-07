@@ -1,4 +1,4 @@
-# Where does EU research funding flow in North Rhine-Westphalia?
+# EU research funding flow in North Rhine-Westphalia, Germany
 
 **Live demo: [nrw-funding-dashboard.streamlit.app](https://nrw-funding-dashboard.streamlit.app)**
 
@@ -15,6 +15,8 @@ Jülich; natural sciences and engineering together account for over half of
 the field-attributed funding.
 
 ![Dashboard overview: filters, key figures and funding by start year](docs/screenshot-overview.png)
+
+![DFG and EU funding side by side for NRW universities](docs/screenshot-dfg.png)
 
 ![Collaboration network of the largest NRW recipients and their European partners](docs/screenshot-network.png)
 
@@ -39,6 +41,7 @@ table view for every chart.
 | CORDIS – EU research projects under Horizon Europe | 2021–2027 | [data.europa.eu](https://data.europa.eu/data/datasets/cordis-eu-research-projects-under-horizon-europe-2021-2027) |
 | CORDIS – EU research projects under Horizon 2020 | 2014–2020 | [data.europa.eu](https://data.europa.eu/data/datasets/cordish2020projects) |
 | Eurostat – population on 1 January by NUTS region (demo_r_d2jan) | Länder populations | [ec.europa.eu/eurostat](https://ec.europa.eu/eurostat/databrowser/product/view/demo_r_d2jan) |
+| DFG Förderatlas 2024 – awards by university and by Land | DFG awards 2020–2022 | [foerderatlas.dfg.de](https://foerderatlas.dfg.de/daten/) |
 
 The CORDIS datasets are published by the EU Publications Office; reuse is
 permitted under [Commission Decision 2011/833/EU](http://data.europa.eu/eli/dec/2011/833/oj)
@@ -100,7 +103,6 @@ data/processed/           Parquet files + machine-generated build summary
 
 ## Roadmap
 
-- **DFG funding (GEPRIS).** The DFG's project database has no
-  machine-readable bulk access as of mid-2026; a planned second data source
-  is the DFG's published funding tables, which would put national and EU
-  funding side by side.
+- **Project-level DFG data.** The dashboard compares DFG and EU funding
+  using the published Förderatlas 2024 tables; project-level DFG analysis
+  waits on GEPRIS offering machine-readable bulk access.
