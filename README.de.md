@@ -56,10 +56,15 @@ mit Quellenangabe gestattet. Eurostat- und GeoNames-Daten werden unter
 CC BY 4.0 nachgenutzt. Die DFG-Zahlen sind den veröffentlichten Tabellen
 des Förderatlas 2024 der Deutschen Forschungsgemeinschaft entnommen und mit
 Quellenangabe wiedergegeben. Die Kartengrundlage nutzt CARTO-Basiskarten
-mit OpenStreetMap-Daten; die Attribution erfolgt in der Karte selbst. Der
-Quellcode dieses Repositoriums steht unter MIT-Lizenz; die Daten
-unterliegen weiterhin den Bedingungen ihrer jeweiligen Anbieter. Releases
-werden auf Zenodo archiviert und sind zitierbar über
+mit OpenStreetMap-Daten; die Attribution erfolgt in der Karte selbst. Code
+und eigene Inhalte dieses Repositoriums stehen unter
+[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.de):
+Nutzung, Weitergabe und Bearbeitung sind für nicht-kommerzielle Zwecke
+erlaubt, einschließlich Studium und Lehre, mit Namensnennung (Jeel Swami)
+und Link auf dieses Repositorium. Kommerzielle Nutzung bedarf der
+schriftlichen Genehmigung. Die Daten unterliegen weiterhin den Bedingungen
+ihrer jeweiligen Anbieter. Releases werden auf Zenodo archiviert und sind
+zitierbar über
 [doi.org/10.5281/zenodo.21841052](https://doi.org/10.5281/zenodo.21841052). `src/fetch_cordis.py` protokolliert den Abrufzeitpunkt sowie
 die `Last-Modified`-/`ETag`-Header des Servers in
 `data/raw/PROVENANCE.json`, sodass jede Zahl auf einen exakten Stand der
