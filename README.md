@@ -1,5 +1,7 @@
 # EU research funding flow in North Rhine-Westphalia, Germany
 
+**English** · [Deutsch](README.de.md)
+
 **Live demo: [nrw-funding-dashboard.streamlit.app](https://nrw-funding-dashboard.streamlit.app)**
 
 An interactive dashboard tracing every EU research grant that reached an
@@ -79,6 +81,12 @@ automatic redeployment of the live app.
   therefore split each participation's contribution equally across its
   project's distinct top-level fields, so they sum to the overall total
   instead of double-counting.
+- **DFG comparison.** DFG figures come from the published Förderatlas 2024
+  tables (© Deutsche Forschungsgemeinschaft) covering awards 2020–2022; the
+  EU side counts contributions committed to projects starting in the same
+  window. University hospitals are counted with their university on both
+  sides; legally separate affiliated institutes are excluded. Awards and
+  commitments are related but distinct measures.
 
 ### Limitations
 
@@ -94,10 +102,14 @@ automatic redeployment of the live app.
 ```
 src/fetch_cordis.py       download raw dumps, write provenance record
 src/fetch_population.py   fetch Länder populations from the Eurostat API
-src/build_dataset.py      filter, flag NRW, join projects + fields, write Parquet
+src/fetch_plz.py          postcode→Land register from GeoNames
+src/fetch_dfg.py          DFG Förderatlas 2024 tables (Datawrapper)
+src/build_dataset.py      filter, attribute, join; write Parquet
+src/validate_build.py     plausibility gate for automated refreshes
 app.py                    Streamlit dashboard
+.github/workflows/        monthly data refresh
 data/raw/                 CORDIS zips + PROVENANCE.json (zips not versioned)
-data/reference/           population figures with retrieval metadata
+data/reference/           reference data with retrieval metadata
 data/processed/           Parquet files + machine-generated build summary
 ```
 
