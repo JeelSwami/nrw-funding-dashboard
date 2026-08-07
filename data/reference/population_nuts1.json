@@ -1,0 +1,42 @@
+{
+  "source": "Eurostat, demo_r_d2jan (population on 1 January), NUTS-1",
+  "url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/demo_r_d2jan?format=JSON&lang=EN&sex=T&age=TOTAL&sinceTimePeriod=2020&geo=DE1&geo=DE2&geo=DE3&geo=DE4&geo=DE5&geo=DE6&geo=DE7&geo=DE8&geo=DE9&geo=DEA&geo=DEB&geo=DEC&geo=DED&geo=DEE&geo=DEF&geo=DEG",
+  "license": "CC BY 4.0 (Eurostat reuse policy)",
+  "retrieved_utc": "2026-08-07T12:52:42+00:00",
+  "reference_year": {
+    "DE1": "2025",
+    "DE2": "2025",
+    "DE3": "2025",
+    "DE4": "2025",
+    "DE5": "2025",
+    "DE6": "2025",
+    "DE7": "2025",
+    "DE8": "2025",
+    "DE9": "2025",
+    "DEA": "2025",
+    "DEB": "2025",
+    "DEC": "2025",
+    "DED": "2025",
+    "DEE": "2025",
+    "DEF": "2025",
+    "DEG": "2025"
+  },
+  "population": {
+    "DE1": 11245898,
+    "DE2": 13248928,
+    "DE3": 3685265,
+    "DE4": 2556747,
+    "DE5": 704881,
+    "DE6": 1862565,
+    "DE7": 6280793,
+    "DE8": 1573597,
+    "DE9": 8004489,
+    "DEA": 18034454,
+    "DEB": 4129569,
+    "DEC": 1012141,
+    "DED": 4042422,
+    "DEE": 2135597,
+    "DEF": 2959517,
+    "DEG": 2100277
+  }
+}

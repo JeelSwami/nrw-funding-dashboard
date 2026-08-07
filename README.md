@@ -34,6 +34,7 @@ table view for every chart.
 |---|---|---|
 | CORDIS – EU research projects under Horizon Europe | 2021–2027 | [data.europa.eu](https://data.europa.eu/data/datasets/cordis-eu-research-projects-under-horizon-europe-2021-2027) |
 | CORDIS – EU research projects under Horizon 2020 | 2014–2020 | [data.europa.eu](https://data.europa.eu/data/datasets/cordish2020projects) |
+| Eurostat – population on 1 January by NUTS region (demo_r_d2jan) | Länder populations | [ec.europa.eu/eurostat](https://ec.europa.eu/eurostat/databrowser/product/view/demo_r_d2jan) |
 
 Both datasets are published by the EU Publications Office; reuse is permitted
 under [Commission Decision 2011/833/EU](http://data.europa.eu/eli/dec/2011/833/oj)
@@ -72,11 +73,13 @@ every figure traces to an exact snapshot of the source (currently
 ## Repository layout
 
 ```
-src/fetch_cordis.py     download raw dumps, write provenance record
-src/build_dataset.py    filter, flag NRW, join projects + fields, write Parquet
-app.py                  Streamlit dashboard
-data/raw/               CORDIS zips + PROVENANCE.json (zips not versioned)
-data/processed/         Parquet files + machine-generated build summary
+src/fetch_cordis.py       download raw dumps, write provenance record
+src/fetch_population.py   fetch Länder populations from the Eurostat API
+src/build_dataset.py      filter, flag NRW, join projects + fields, write Parquet
+app.py                    Streamlit dashboard
+data/raw/                 CORDIS zips + PROVENANCE.json (zips not versioned)
+data/reference/           population figures with retrieval metadata
+data/processed/           Parquet files + machine-generated build summary
 ```
 
 ## Roadmap
@@ -85,5 +88,5 @@ data/processed/         Parquet files + machine-generated build summary
   machine-readable bulk access as of mid-2026; a planned second data source
   is the DFG's published funding tables, which would put national and EU
   funding side by side.
-- Per-capita and per-researcher normalisation of city totals.
 - Collaboration-network view of NRW organisations and their EU partners.
+- Automated monthly data refresh via GitHub Actions.

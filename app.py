@@ -38,6 +38,12 @@ def load():
     return de, fields, summary
 
 
+@st.cache_data
+def load_population():
+    return json.loads(
+        (DATA.parent / "reference" / "population_nuts1.json").read_text())
+
+
 def eur(x: float) -> str:
     if x >= 1e9:
         return f"€{x / 1e9:.2f} bn"
@@ -275,6 +281,53 @@ if len(geo):
                "usable coordinates in CORDIS are omitted here (they remain in "
                "all other figures).")
 
+# --- Laender benchmark ------------------------------------------------------
+st.subheader("How does NRW compare? EU funding per inhabitant, by Land")
+LAENDER = {
+    "DE1": "Baden-Württemberg", "DE2": "Bayern", "DE3": "Berlin",
+    "DE4": "Brandenburg", "DE5": "Bremen", "DE6": "Hamburg", "DE7": "Hessen",
+    "DE8": "Mecklenburg-Vorpommern", "DE9": "Niedersachsen",
+    "DEA": "Nordrhein-Westfalen", "DEB": "Rheinland-Pfalz", "DEC": "Saarland",
+    "DED": "Sachsen", "DEE": "Sachsen-Anhalt", "DEF": "Schleswig-Holstein",
+    "DEG": "Thüringen",
+}
+popref = load_population()
+bench = de_filtered.copy()  # programme/year/type filters; city never applies
+bench["land"] = bench["nutsCode"].fillna("").str[:3]
+bench = bench[bench["land"].isin(LAENDER)]
+rows = (bench.groupby("land")["ecContribution"].sum().rename("total")
+        .reset_index())
+rows["name"] = rows["land"].map(LAENDER)
+rows["pop"] = rows["land"].map(popref["population"])
+rows["percap"] = rows["total"] / rows["pop"]
+rows = rows.sort_values("percap")
+bench_fig = go.Figure(go.Bar(
+    x=rows["percap"], y=rows["name"], orientation="h",
+    marker=dict(color=[BLUE if l == "DEA" else "#c3c2b7"
+                       for l in rows["land"]]),
+    cliponaxis=False, text=[f"€{v:,.0f}" for v in rows["percap"]],
+    textposition="outside", textfont=dict(color=INK_2, size=12),
+    customdata=[(eur(t), f"{p / 1e6:.1f} m")
+                for t, p in zip(rows["total"], rows["pop"])],
+    hovertemplate=("%{y}<br>€%{x:,.0f} per inhabitant<br>"
+                   "total %{customdata[0]} · population %{customdata[1]}"
+                   "<extra></extra>"),
+))
+bench_fig.update_xaxes(visible=False,
+                       range=[0, float(rows["percap"].max()) * 1.18])
+bench_fig.update_yaxes(showgrid=False)
+bench_fig.update_layout(bargap=0.35)
+bench_fig = style(bench_fig, 480)
+bench_fig.update_layout(margin=dict(l=8, r=56, t=8, b=8))
+st.plotly_chart(bench_fig, config={"displayModeBar": False})
+pop_year = sorted(set(popref["reference_year"].values()))[-1]
+st.caption(
+    "EU contribution over the selected period divided by the Land's "
+    f"population on 1 January {pop_year} (Eurostat, demo_r_d2jan). "
+    "Nordrhein-Westfalen is highlighted. Small Länder that host large "
+    "organisations' legal seats (e.g. Bremen) rank high because funding "
+    "counts at the registered address. The city filter does not apply here.")
+
 # --- Two-column: fields and organisation types ------------------------------
 c3, c4 = st.columns(2)
 with c3:
@@ -387,6 +440,13 @@ NRW figures.
 projects carry several field tags. Funding per field splits each
 participation's contribution equally across its project's distinct top-level
 fields, so field totals sum to the overall total.
+
+**Per-inhabitant comparison.** Population figures come from Eurostat,
+dataset [demo_r_d2jan](https://ec.europa.eu/eurostat/databrowser/product/view/demo_r_d2jan)
+(population on 1 January, NUTS-1), reused under CC BY 4.0; retrieval details
+are stored in `data/reference/population_nuts1.json`. Funding is aggregated
+over the selected period and divided by a single reference-year population,
+so the ratio is a normalisation, not a time series.
 
 **Limitations.** Contributions are commitments, not final payments; multi-site
 organisations are attributed to the address registered for the participation;
