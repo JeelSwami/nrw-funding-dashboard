@@ -1,0 +1,47 @@
+name: Data refresh
+
+# Rebuild the dataset from the latest CORDIS release once a month.
+# Commits only when the processed data actually changed; a push then
+# triggers Streamlit Community Cloud to redeploy the dashboard.
+
+on:
+  schedule:
+    - cron: "0 6 3 * *" # 06:00 UTC on the 3rd of every month
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pipeline dependencies
+        run: pip install pandas pyarrow certifi
+
+      - name: Fetch source data
+        run: |
+          python src/fetch_cordis.py
+          python src/fetch_population.py
+
+      - name: Build dataset
+        run: python src/build_dataset.py
+
+      - name: Commit refreshed data
+        run: |
+          if git diff --quiet -- data/processed/participations_de.parquet data/processed/fields_nrw.parquet; then
+            echo "No data changes; skipping commit."
+            exit 0
+          fi
+          snapshot=$(python -c "import json; print(json.load(open('data/raw/PROVENANCE.json'))['HORIZON']['last_modified'])")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/processed data/reference data/raw/PROVENANCE.json
+          git commit -m "Data refresh: CORDIS snapshot ${snapshot}"
+          git push
