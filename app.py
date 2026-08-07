@@ -241,20 +241,14 @@ with c2:
 
 # --- Map --------------------------------------------------------------------
 st.subheader("Where the money lands")
-geo = nrw[nrw["geolocation"].notna()].copy()
-geo["geolocation"] = geo["geolocation"].str.strip("() ")
-geo = geo[geo["geolocation"].str.contains(",", na=False)]
+geo = nrw[nrw["lat"].notna() & nrw["lon"].notna()]
 if len(geo):
     pts = (geo.groupby("organisationID")
            .agg(org_label=("org_label", "first"),
                 city=("city_display", "first"),
-                geolocation=("geolocation", "first"),
+                lat=("lat", "first"), lon=("lon", "first"),
                 ec=("ecContribution", "sum"))
            .reset_index())
-    latlon = pts["geolocation"].str.split(",", expand=True)
-    pts["lat"] = pd.to_numeric(latlon[0], errors="coerce")
-    pts["lon"] = pd.to_numeric(latlon[1], errors="coerce")
-    pts = pts.dropna(subset=["lat", "lon"])
     pts = pts[pts["ec"] > 0]
     map_fig = go.Figure(go.Scattermap(
         lat=pts["lat"], lon=pts["lon"], mode="markers",
@@ -292,9 +286,9 @@ LAENDER = {
     "DEG": "Thüringen",
 }
 popref = load_population()
-bench = de_filtered.copy()  # programme/year/type filters; city never applies
-bench["land"] = bench["nutsCode"].fillna("").str[:3]
-bench = bench[bench["land"].isin(LAENDER)]
+# The `land` column is the pipeline's cross-validated attribution (NUTS
+# checked against the registered address's postcode; see methodology).
+bench = de_filtered[de_filtered["land"].isin(LAENDER)]
 rows = (bench.groupby("land")["ecContribution"].sum().rename("total")
         .reset_index())
 rows["name"] = rows["land"].map(LAENDER)
@@ -393,7 +387,8 @@ st.caption(f"{len(table):,} participations shown (largest first, capped at "
 st.subheader("Data & citation")
 export = (nrw[["programme", "projectID", "acronym", "title", "name",
                "city_display", "activity_label", "role", "start_year",
-               "ecContribution", "netEcContribution", "nutsCode"]]
+               "ecContribution", "netEcContribution", "nutsCode", "land",
+               "land_method"]]
           .rename(columns={"city_display": "city",
                            "activity_label": "organisation_type"}))
 d1, d2 = st.columns([1, 2])
@@ -428,13 +423,23 @@ in one project. Figures aggregate the EU's committed contribution
 (`ecContribution`) per participation; grants signed but later reduced or
 terminated are counted at their recorded value.
 
-**NRW identification.** Primary criterion: Eurostat NUTS code beginning with
-`DEA` (North Rhine-Westphalia). Fallback for rows without a NUTS code:
-city-name match against NRW municipalities
-({s['nrw_matched_by_city_fallback']} of {s['nrw_participations']:,} NRW rows).
-{s['german_rows_missing_nuts_unmatched']} German rows
-(<0.5 %) had neither a NUTS code nor a matchable city and are excluded from
-NRW figures.
+**Land attribution.** Each participation's Eurostat NUTS code is
+cross-validated against the postal code of its registered address, resolved
+through the [GeoNames postal register](https://download.geonames.org/export/zip/)
+(CC BY 4.0). When both agree the NUTS code stands; when they disagree the
+postal code wins, because it is part of the organisation's own registered
+address — some CORDIS releases carry corrupted NUTS codes (the August 2026
+release stamped organisations from Köln, Jülich and München with the Berlin
+code `DE300`). In this build, {s.get('land_nuts_plz_conflicts', 0):,} of
+{s['german_participations']:,} German rows had such a conflict, of which
+{s.get('nrw_recovered_from_nuts_conflicts', 0):,} resolved to NRW. Rows with
+neither signal fall back to a city-name match
+({s['nrw_matched_by_city_fallback']} rows);
+{s.get('german_rows_without_land', 0)} German rows with no usable signal are
+excluded. The same releases move geolocations, so map coordinates further
+than ~0.7° from their postcode's centroid are replaced by that centroid
+({s.get('coords_repaired', 0):,} rows). The per-Land comparison uses this
+corrected attribution throughout.
 
 **Field attribution.** EuroSciVoc classifies projects, not participations, and
 projects carry several field tags. Funding per field splits each

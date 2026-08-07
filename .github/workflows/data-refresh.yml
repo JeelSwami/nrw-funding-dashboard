@@ -29,9 +29,13 @@ jobs:
         run: |
           python src/fetch_cordis.py
           python src/fetch_population.py
+          python src/fetch_plz.py
 
       - name: Build dataset
         run: python src/build_dataset.py
+
+      - name: Validate against previous release
+        run: python src/validate_build.py
 
       - name: Commit refreshed data
         run: |

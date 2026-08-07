@@ -9,11 +9,18 @@ Methodology (also documented in README.md):
 
 * Unit of analysis: one row = one *participation* (one organisation's role in
   one project). An organisation appearing in ten projects contributes ten rows.
-* NRW identification: primary criterion is the Eurostat NUTS code — every code
-  beginning with "DEA" lies in NRW. For the <1 % of German rows without a NUTS
-  code, the organisation's city is matched against a list of NRW
-  municipalities; the method used is recorded per row in `nrw_method`
-  ("nuts", "city", or "" when not NRW).
+* Land attribution: the NUTS code is cross-validated against the postal code
+  of the registered address, resolved through the GeoNames postal register
+  (see fetch_plz.py). When both agree, the NUTS code stands; when they
+  disagree — some CORDIS releases stamp organisations from Cologne, Juelich,
+  Munich and elsewhere as Berlin/DE300 — the postal code wins, because it is
+  part of the organisation's own registered address. Rows with neither
+  signal fall back to a city-name match against NRW municipalities. The
+  method is recorded per row ("nuts", "plz", "city").
+* Coordinates: CORDIS geolocations are replaced by the postcode centroid
+  when they sit further than ~0.7 degrees from it (the same releases that
+  corrupt NUTS codes also move geolocations), and filled from the centroid
+  when missing.
 * Funding metric: `ecContribution` — the EU's committed financial contribution
   to that participant. `netEcContribution` is retained as a column.
 * Science fields: EuroSciVoc tags exist per project, not per participation,
@@ -86,6 +93,8 @@ NRW_CITIES = {
     "steinfurt", "troisdorf", "witten", "wuppertal",
 }
 
+LAND_CODES = {f"DE{c}" for c in "123456789ABCDEFG"}
+
 
 def normalise_city(raw: object) -> str:
     """Lower-case, strip accents, and fold German digraphs for matching."""
@@ -109,7 +118,15 @@ def display_city(raw: object) -> str:
     return CITY_DISPLAY_NORM.get(normalise_city(raw), raw.strip().title())
 
 
-def load_programme(label: str, archive: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
+def load_plz_register() -> dict:
+    path = RAW.parent / "reference" / "plz_land.json"
+    if not path.exists():
+        sys.exit(f"missing {path} - run: python src/fetch_plz.py")
+    return json.loads(path.read_text())["plz"]
+
+
+def load_programme(label: str, archive: Path,
+                   plz_map: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
     with zipfile.ZipFile(archive) as zf:
         with zf.open("organization.csv") as fh:
             orgs = pd.read_csv(fh, sep=";", usecols=ORG_COLS, dtype=str,
@@ -126,12 +143,46 @@ def load_programme(label: str, archive: Path) -> tuple[pd.DataFrame, pd.DataFram
         orgs[col] = pd.to_numeric(orgs[col], errors="coerce").fillna(0.0)
 
     nuts = orgs["nutsCode"].fillna("").str.strip()
-    city_norm = orgs["city"].map(normalise_city)
-    orgs["nrw_method"] = ""
-    orgs.loc[nuts.str.startswith("DEA"), "nrw_method"] = "nuts"
-    fallback = (nuts == "") & city_norm.isin({normalise_city(c) for c in NRW_CITIES})
-    orgs.loc[fallback, "nrw_method"] = "city"
-    orgs["is_nrw"] = orgs["nrw_method"] != ""
+    land_nuts = nuts.str[:3].where(nuts.str[:3].isin(LAND_CODES), "")
+    plz = (orgs["postCode"].fillna("").str.extract(r"(\d{5})", expand=False)
+           .fillna(""))
+    plz_rec = plz.map(lambda p: plz_map.get(p) or {})
+    land_plz = plz_rec.map(lambda r: r.get("land") or "")
+    city_nrw = orgs["city"].map(normalise_city).isin(
+        {normalise_city(c) for c in NRW_CITIES})
+
+    land = land_nuts.copy()
+    method = pd.Series("", index=orgs.index)
+    method[land_nuts != ""] = "nuts"
+    # The postal code is part of the registered address and survives the
+    # NUTS/geocoding regressions seen in some CORDIS releases, so it wins
+    # any disagreement and covers rows without a NUTS code.
+    use_plz = (land_plz != "") & (land_plz != land_nuts)
+    land[use_plz] = land_plz[use_plz]
+    method[use_plz] = "plz"
+    only_city = (land == "") & city_nrw
+    land[only_city] = "DEA"
+    method[only_city] = "city"
+
+    orgs["land"] = land
+    orgs["land_method"] = method
+    orgs["is_nrw"] = land == "DEA"
+    orgs["nrw_method"] = method.where(orgs["is_nrw"], "")
+    orgs["nuts_plz_conflict"] = ((land_nuts != "") & (land_plz != "")
+                                 & (land_nuts != land_plz))
+
+    # Repair coordinates against the postcode centroid.
+    ll = (orgs["geolocation"].fillna("").str.strip("() ")
+          .str.split(",", expand=True).reindex(columns=[0, 1]))
+    glat = pd.to_numeric(ll[0], errors="coerce")
+    glon = pd.to_numeric(ll[1], errors="coerce")
+    plat = pd.to_numeric(plz_rec.map(lambda r: r.get("lat")), errors="coerce")
+    plon = pd.to_numeric(plz_rec.map(lambda r: r.get("lon")), errors="coerce")
+    off = (glat - plat).abs() + (glon - plon).abs()
+    bad = plat.notna() & (glat.isna() | (off > 0.7))
+    orgs["lat"] = glat.where(~bad, plat)
+    orgs["lon"] = glon.where(~bad, plon)
+    orgs["coords_repaired"] = bad & glat.notna()
 
     projects = projects.rename(columns={"id": "projectID"})
     merged = orgs.merge(projects, on="projectID", how="left", validate="m:1")
@@ -153,12 +204,13 @@ def load_programme(label: str, archive: Path) -> tuple[pd.DataFrame, pd.DataFram
 
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
+    plz_map = load_plz_register()
     frames, field_frames = [], []
     for label, filename in ARCHIVES.items():
         archive = RAW / filename
         if not archive.exists():
             sys.exit(f"missing {archive} - run: python src/fetch_cordis.py")
-        merged, fields = load_programme(label, archive)
+        merged, fields = load_programme(label, archive, plz_map)
         frames.append(merged)
         field_frames.append(fields)
         print(f"[ok] {label}: {len(merged)} German participations, "
@@ -192,9 +244,14 @@ def main() -> int:
         "german_participations": int(len(de)),
         "nrw_participations": int(de["is_nrw"].sum()),
         "nrw_matched_by_city_fallback": int((de["nrw_method"] == "city").sum()),
-        "german_rows_missing_nuts_unmatched": int(
-            ((de["nutsCode"].fillna("").str.strip() == "")
-             & ~de["is_nrw"]).sum()),
+        "land_nuts_plz_conflicts": int(de["nuts_plz_conflict"].sum()),
+        "nrw_recovered_from_nuts_conflicts": int(
+            (de["nuts_plz_conflict"] & de["is_nrw"]).sum()),
+        "nrw_recovered_ec_eur": float(
+            de.loc[de["nuts_plz_conflict"] & de["is_nrw"],
+                   "ecContribution"].sum()),
+        "coords_repaired": int(de["coords_repaired"].sum()),
+        "german_rows_without_land": int((de["land"] == "").sum()),
         "nrw_projects": int(de.loc[de["is_nrw"], "projectID"].nunique()),
         "nrw_organisations": int(
             de.loc[de["is_nrw"], "organisationID"].nunique()),

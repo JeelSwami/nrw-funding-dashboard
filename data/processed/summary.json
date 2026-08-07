@@ -1,10 +1,10 @@
 {
-  "built_utc": "2026-08-07T13:00:54+00:00",
+  "built_utc": "2026-08-07T13:12:54+00:00",
   "provenance": {
     "HORIZON": {
       "url": "https://cordis.europa.eu/data/cordis-HORIZONprojects-csv.zip",
       "file": "cordis-HORIZONprojects-csv.zip",
-      "retrieved_utc": "2026-08-07T13:00:42+00:00",
+      "retrieved_utc": "2026-08-07T13:05:51+00:00",
       "last_modified": "Thu, 06 Aug 2026 14:02:10 GMT",
       "etag": "\"6a7493e2-22f920f\"",
       "content_length": "36672015"
@@ -12,28 +12,32 @@
     "H2020": {
       "url": "https://cordis.europa.eu/data/cordis-h2020projects-csv.zip",
       "file": "cordis-h2020projects-csv.zip",
-      "retrieved_utc": "2026-08-07T13:00:50+00:00",
+      "retrieved_utc": "2026-08-07T13:06:01+00:00",
       "last_modified": "Thu, 06 Aug 2026 14:04:05 GMT",
       "etag": "\"6a749455-34ad42a\"",
       "content_length": "55235626"
     }
   },
   "german_participations": 36985,
-  "nrw_participations": 5238,
-  "nrw_matched_by_city_fallback": 2,
-  "german_rows_missing_nuts_unmatched": 167,
-  "nrw_projects": 4061,
-  "nrw_organisations": 1089,
-  "nrw_ec_contribution_eur": 2565260017.92,
+  "nrw_participations": 6667,
+  "nrw_matched_by_city_fallback": 10,
+  "land_nuts_plz_conflicts": 3767,
+  "nrw_recovered_from_nuts_conflicts": 1419,
+  "nrw_recovered_ec_eur": 1140192249.13,
+  "coords_repaired": 4102,
+  "german_rows_without_land": 278,
+  "nrw_projects": 5097,
+  "nrw_organisations": 1128,
+  "nrw_ec_contribution_eur": 3705890653.1,
   "german_ec_contribution_eur": 19948133777.7,
   "by_programme": {
     "Horizon 2020": {
-      "nrw_participations": 3020,
-      "nrw_ec_contribution_eur": 1281409015.81
+      "nrw_participations": 3837,
+      "nrw_ec_contribution_eur": 1880441417.4299998
     },
     "Horizon Europe": {
-      "nrw_participations": 2218,
-      "nrw_ec_contribution_eur": 1283851002.1100001
+      "nrw_participations": 2830,
+      "nrw_ec_contribution_eur": 1825449235.67
     }
   }
 }
