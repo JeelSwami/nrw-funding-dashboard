@@ -39,7 +39,21 @@ jobs:
 
       - name: Commit refreshed data
         run: |
-          if git diff --quiet -- data/processed/participations_de.parquet data/processed/fields_nrw.parquet; then
+          # Compare the build's statistics, not file bytes - Parquet
+          # re-encoding across library versions would otherwise look like
+          # a data change every month.
+          if python - <<'EOF'
+          import json, subprocess, sys
+          new = json.load(open("data/processed/summary.json"))
+          old = json.loads(subprocess.run(
+              ["git", "show", "HEAD:data/processed/summary.json"],
+              capture_output=True, text=True, check=True).stdout)
+          keys = ["german_participations", "nrw_participations",
+                  "nrw_projects", "nrw_organisations",
+                  "nrw_ec_contribution_eur", "german_ec_contribution_eur"]
+          sys.exit(0 if all(old.get(k) == new.get(k) for k in keys) else 1)
+          EOF
+          then
             echo "No data changes; skipping commit."
             exit 0
           fi
