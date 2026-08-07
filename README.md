@@ -1,5 +1,7 @@
 # Where does EU research funding flow in North Rhine-Westphalia?
 
+**Live demo: [nrw-funding-dashboard.streamlit.app](https://nrw-funding-dashboard.streamlit.app)**
+
 An interactive dashboard tracing every EU research grant that reached an
 organisation in North Rhine-Westphalia (NRW) under Horizon 2020 (2014–2020)
 and Horizon Europe (2021–2027), built from the official CORDIS bulk datasets
