@@ -137,6 +137,11 @@ def load_programme(label: str, archive: Path,
         with zf.open("euroSciVoc.csv") as fh:
             fields = pd.read_csv(fh, sep=";", dtype=str, encoding="utf-8-sig")
 
+    # Slim all-country view, kept before the German filter: needed to find
+    # the European partners of NRW organisations.
+    partners = orgs[["projectID", "organisationID", "name", "shortName",
+                     "country"]].copy()
+
     orgs = orgs[orgs["country"] == "DE"].copy()
     orgs["programme"] = label
     for col in ("ecContribution", "netEcContribution"):
@@ -199,25 +204,52 @@ def load_programme(label: str, archive: Path,
                           .str.strip("/").str.split("/").str[0].str.strip())
     fields = (fields[fields["field_l1"] != ""][["projectID", "field_l1"]]
               .drop_duplicates())
-    return merged, fields
+    return merged, fields, partners
 
 
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     plz_map = load_plz_register()
-    frames, field_frames = [], []
+    frames, field_frames, partner_frames = [], [], []
     for label, filename in ARCHIVES.items():
         archive = RAW / filename
         if not archive.exists():
             sys.exit(f"missing {archive} - run: python src/fetch_cordis.py")
-        merged, fields = load_programme(label, archive, plz_map)
+        merged, fields, partners = load_programme(label, archive, plz_map)
         frames.append(merged)
         field_frames.append(fields)
+        partner_frames.append(partners)
         print(f"[ok] {label}: {len(merged)} German participations, "
               f"{merged['is_nrw'].sum()} in NRW")
 
     de = pd.concat(frames, ignore_index=True)
     fields = pd.concat(field_frames, ignore_index=True).drop_duplicates()
+
+    # Collaboration edges: the top 50 NRW organisations paired with every
+    # partner in their projects (any country), weighted by joint projects.
+    allp = pd.concat(partner_frames, ignore_index=True)
+    allp["org_label"] = (allp["shortName"].fillna("").str.strip()
+                         .where(lambda s: s != "", allp["name"]))
+    nrw_org_ids = set(de.loc[de["is_nrw"], "organisationID"])
+    nrw_project_ids = set(de.loc[de["is_nrw"], "projectID"])
+    part = (allp[allp["projectID"].isin(nrw_project_ids)]
+            .drop_duplicates(["projectID", "organisationID"]))
+    top_orgs = (de[de["is_nrw"]].groupby("organisationID")["ecContribution"]
+                .sum().nlargest(50))
+    left = part[part["organisationID"].isin(top_orgs.index)]
+    pairs = left.merge(part, on="projectID", suffixes=("_nrw", "_p"))
+    pairs = pairs[pairs["organisationID_nrw"] != pairs["organisationID_p"]]
+    edges = (pairs.groupby(["organisationID_nrw", "org_label_nrw",
+                            "organisationID_p", "org_label_p", "country_p"])
+             .agg(joint_projects=("projectID", "nunique")).reset_index())
+    edges["partner_is_nrw"] = edges["organisationID_p"].isin(nrw_org_ids)
+    edges["nrw_org_ec"] = edges["organisationID_nrw"].map(top_orgs)
+    edges = (edges.sort_values("joint_projects", ascending=False)
+             .groupby("organisationID_nrw").head(15).reset_index(drop=True))
+    edges = edges.rename(columns={
+        "organisationID_nrw": "nrw_org_id", "org_label_nrw": "nrw_org",
+        "organisationID_p": "partner_id", "org_label_p": "partner",
+        "country_p": "partner_country"})
 
     # Fractional field attribution: split each participation's contribution
     # equally across its project's distinct top-level fields.
@@ -232,6 +264,7 @@ def main() -> int:
     (nrw_fields[["programme", "projectID", "organisationID", "org_label",
                  "city_display", "field_l1", "ec_frac", "start_year"]]
      .to_parquet(OUT / "fields_nrw.parquet", index=False))
+    edges.to_parquet(OUT / "collab_edges.parquet", index=False)
 
     provenance = {}
     prov_path = RAW / "PROVENANCE.json"
@@ -270,6 +303,7 @@ def main() -> int:
     (OUT / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(f"[ok] wrote {OUT / 'participations_de.parquet'}")
     print(f"[ok] wrote {OUT / 'fields_nrw.parquet'}")
+    print(f"[ok] wrote {OUT / 'collab_edges.parquet'} ({len(edges)} edges)")
     print(f"[ok] wrote {OUT / 'summary.json'}")
     return 0
 
