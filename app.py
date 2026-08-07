@@ -7,8 +7,10 @@ Run:                      streamlit run app.py
 """
 
 import json
+import math
 from pathlib import Path
 
+import networkx as nx
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -30,16 +32,23 @@ st.set_page_config(page_title="EU research funding in NRW",
                    page_icon=":bar_chart:", layout="wide")
 
 
+def _fingerprint(*paths):
+    """Cache key tied to the data files, so a data update after a hot code
+    reload can never serve a stale cached frame."""
+    return tuple((p.name, p.stat().st_mtime_ns) for p in paths if p.exists())
+
+
 @st.cache_data
-def load():
+def load(fingerprint):
     de = pd.read_parquet(DATA / "participations_de.parquet")
     fields = pd.read_parquet(DATA / "fields_nrw.parquet")
+    collab = pd.read_parquet(DATA / "collab_edges.parquet")
     summary = json.loads((DATA / "summary.json").read_text())
-    return de, fields, summary
+    return de, fields, collab, summary
 
 
 @st.cache_data
-def load_population():
+def load_population(fingerprint):
     return json.loads(
         (DATA.parent / "reference" / "population_nuts1.json").read_text())
 
@@ -119,7 +128,9 @@ def org_display(label: str, max_len: int = 36) -> str:
 REPO_URL = "https://github.com/JeelSwami/nrw-funding-dashboard"
 APP_URL = "https://nrw-funding-dashboard.streamlit.app"
 
-de, fields, summary = load()
+de, fields, collab, summary = load(_fingerprint(
+    DATA / "participations_de.parquet", DATA / "fields_nrw.parquet",
+    DATA / "collab_edges.parquet", DATA / "summary.json"))
 nrw_all = de[de["is_nrw"]]
 
 st.title("Where does EU research funding flow in North Rhine-Westphalia?")
@@ -285,7 +296,8 @@ LAENDER = {
     "DED": "Sachsen", "DEE": "Sachsen-Anhalt", "DEF": "Schleswig-Holstein",
     "DEG": "Thüringen",
 }
-popref = load_population()
+popref = load_population(_fingerprint(
+    DATA.parent / "reference" / "population_nuts1.json"))
 # The `land` column is the pipeline's cross-validated attribution (NUTS
 # checked against the registered address's postcode; see methodology).
 bench = de_filtered[de_filtered["land"].isin(LAENDER)]
@@ -321,6 +333,86 @@ st.caption(
     "Nordrhein-Westfalen is highlighted. Small Länder that host large "
     "organisations' legal seats (e.g. Bremen) rank high because funding "
     "counts at the registered address. The city filter does not apply here.")
+
+# --- Collaboration network --------------------------------------------------
+st.subheader("Who does NRW collaborate with?")
+top_nrw = (collab.drop_duplicates("nrw_org_id")
+           .sort_values("nrw_org_ec", ascending=False))
+disp_to_raw = {org_display(o): o for o in top_nrw["nrw_org"]}
+focus = st.selectbox(
+    "Focus", ["Overview: top NRW organisations"]
+    + [org_display(o) for o in top_nrw["nrw_org"].head(25)],
+    label_visibility="collapsed")
+if focus.startswith("Overview"):
+    hubs = set(top_nrw["nrw_org_id"].head(10))
+    ev = (collab[collab["nrw_org_id"].isin(hubs)]
+          .sort_values("joint_projects", ascending=False)
+          .groupby("nrw_org_id").head(6))
+else:
+    ev = collab[collab["nrw_org"] == disp_to_raw[focus]]
+    hubs = set(ev["nrw_org_id"])
+
+G = nx.Graph()
+for r in ev.itertuples():
+    G.add_node(r.nrw_org_id, label=org_display(r.nrw_org), kind="nrw")
+    if r.partner_id not in G or G.nodes[r.partner_id].get("kind") != "nrw":
+        kind = ("nrw" if r.partner_is_nrw
+                else "de" if r.partner_country == "DE" else "intl")
+        G.add_node(r.partner_id, label=org_display(r.partner), kind=kind)
+    G.add_edge(r.nrw_org_id, r.partner_id, weight=int(r.joint_projects))
+
+# Layout on topology alone: raw joint-project weights (up to >100) would
+# collapse the strongest partners into an unreadable core.
+pos = nx.spring_layout(G, seed=42, k=2.0 / math.sqrt(max(len(G), 2)),
+                       iterations=200, weight=None)
+net = go.Figure()
+for a, b, d in G.edges(data=True):
+    net.add_trace(go.Scatter(
+        x=[pos[a][0], pos[b][0]], y=[pos[a][1], pos[b][1]], mode="lines",
+        line=dict(width=min(1 + math.log2(d["weight"]), 6), color=GRID),
+        hoverinfo="skip", showlegend=False))
+KIND_STYLE = {"nrw": (BLUE, "NRW"), "de": ("#c3c2b7", "Germany (other)"),
+              "intl": (ORANGE, "International")}
+strength = {n: sum(d["weight"] for _, _, d in G.edges(n, data=True))
+            for n in G}
+for kind, (color, name) in KIND_STYLE.items():
+    nodes = [n for n in G if G.nodes[n]["kind"] == kind]
+    if not nodes:
+        continue
+    net.add_trace(go.Scatter(
+        x=[pos[n][0] for n in nodes], y=[pos[n][1] for n in nodes],
+        mode="markers", name=name,
+        marker=dict(color=color,
+                    size=[min(9 + 1.6 * math.sqrt(strength[n]), 34)
+                          for n in nodes],
+                    line=dict(width=2, color=SURFACE)),
+        text=[f"{G.nodes[n]['label']}<br>{strength[n]} joint projects"
+              for n in nodes],
+        hovertemplate="%{text}<extra></extra>"))
+label_nodes = list(G) if len(G) <= 20 else list(hubs)
+for n in label_nodes:
+    net.add_annotation(x=pos[n][0], y=pos[n][1], text=G.nodes[n]["label"],
+                       showarrow=False, yshift=14,
+                       font=dict(family=FONT, size=11, color=INK_2))
+net.update_xaxes(visible=False)
+net.update_yaxes(visible=False)
+net.update_layout(legend=dict(orientation="h", y=1.06,
+                              font=dict(color=INK_2)))
+st.plotly_chart(style(net, 560), config={"displayModeBar": False})
+st.caption(
+    "Organisations connected by joint project participation; line width "
+    "scales with the number of shared projects. The overview shows the ten "
+    "largest NRW recipients with their six strongest partners each; choose "
+    "an organisation above to see its fifteen strongest partnerships. Based "
+    "on all years and both programmes — the filter row does not apply.")
+if show_tables:
+    st.dataframe(ev[["nrw_org", "partner", "partner_country",
+                     "joint_projects"]]
+                 .rename(columns={"nrw_org": "NRW organisation",
+                                  "partner": "Partner",
+                                  "partner_country": "Country",
+                                  "joint_projects": "Joint projects"}),
+                 hide_index=True)
 
 # --- Two-column: fields and organisation types ------------------------------
 c3, c4 = st.columns(2)

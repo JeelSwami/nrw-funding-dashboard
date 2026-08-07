@@ -100,4 +100,3 @@ data/processed/           Parquet files + machine-generated build summary
   machine-readable bulk access as of mid-2026; a planned second data source
   is the DFG's published funding tables, which would put national and EU
   funding side by side.
-- Collaboration-network view of NRW organisations and their EU partners.
