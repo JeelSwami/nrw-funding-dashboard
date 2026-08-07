@@ -7,12 +7,12 @@ organisation in North Rhine-Westphalia (NRW) under Horizon 2020 (2014–2020)
 and Horizon Europe (2021–2027), built from the official CORDIS bulk datasets
 of the EU Publications Office.
 
-At the July 2026 data snapshot, the two framework programmes committed
-**€3.54 billion** to **1,104 NRW organisations** across **4,969 projects** —
-**17.8 %** of the €19.9 billion that went to Germany as a whole. Köln leads
-the state (€1.05 bn, helped by DLR's legal seat there), followed by Bonn,
-Aachen and Jülich; natural sciences and engineering together account for
-over half of the field-attributed funding.
+At the August 2026 data snapshot, the two framework programmes committed
+**€3.71 billion** to **1,128 NRW organisations** across **5,097 projects** —
+**18.6 %** of the €20.0 billion that went to Germany as a whole. Köln leads
+the state (helped by DLR's legal seat there), followed by Bonn, Aachen and
+Jülich; natural sciences and engineering together account for over half of
+the field-attributed funding.
 
 ## Quickstart
 
@@ -54,12 +54,19 @@ automatic redeployment of the live app.
   role in one project. An organisation active in ten projects contributes ten
   rows. Figures aggregate `ecContribution`, the EU's committed financial
   contribution to that participant.
-- **NRW identification.** Primary criterion is the Eurostat NUTS code:
-  every code beginning with `DEA` lies in NRW. Rows without a NUTS code
-  (<1 % of German rows) fall back to a city-name match against NRW
-  municipalities; the method used is recorded per row. 167 German rows with
-  neither a NUTS code nor a matchable city (<0.5 %) are excluded from NRW
-  figures.
+- **Land attribution.** Each row's Eurostat NUTS code is cross-validated
+  against the postal code of the registered address, resolved through the
+  [GeoNames postal register](https://download.geonames.org/export/zip/)
+  (CC BY 4.0). When they agree the NUTS code stands; when they disagree the
+  postal code wins — some CORDIS releases carry corrupted NUTS codes and
+  geolocations (the August 2026 release stamped organisations from Köln,
+  Jülich and München as Berlin). Coordinates further than ~0.7° from the
+  postcode centroid are likewise replaced by that centroid. Rows with
+  neither signal fall back to a city-name match; the method used is
+  recorded per row, and rows with no usable signal (<1 %) are excluded.
+  A validation step (`src/validate_build.py`) additionally blocks any
+  automated refresh whose totals move implausibly against the previous
+  release.
 - **Fields of science.** EuroSciVoc tags classify projects, not
   participations, and a project usually carries several tags. Field totals
   therefore split each participation's contribution equally across its
