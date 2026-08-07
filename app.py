@@ -610,6 +610,7 @@ with d2:
         "Swami, J. (2026). EU research funding flow in\n"
         "North Rhine-Westphalia, Germany. Interactive dashboard.\n"
         f"Data: CORDIS, EU Publications Office (snapshot {snap_short}).\n"
+        "https://doi.org/10.5281/zenodo.21841052\n"
         f"{APP_URL}", language=None)
 
 # --- Methodology ------------------------------------------------------------

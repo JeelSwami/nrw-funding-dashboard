@@ -2,6 +2,8 @@
 
 **English** · [Deutsch](README.de.md)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21841052.svg)](https://doi.org/10.5281/zenodo.21841052)
+
 **Live demo: [nrw-funding-dashboard.streamlit.app](https://nrw-funding-dashboard.streamlit.app)**
 
 An interactive dashboard tracing every EU research grant that reached an
@@ -54,7 +56,9 @@ The DFG figures are taken from the published Förderatlas 2024 tables of the
 Deutsche Forschungsgemeinschaft and are reproduced with attribution.
 The map background uses CARTO basemaps with OpenStreetMap data, attributed
 on the map itself. The source code of this repository is MIT-licensed; the
-data remains subject to the terms of its respective providers.
+data remains subject to the terms of its respective providers. Releases are
+archived on Zenodo and citable via
+[doi.org/10.5281/zenodo.21841052](https://doi.org/10.5281/zenodo.21841052).
 `src/fetch_cordis.py` records the retrieval timestamp and the server's
 `Last-Modified`/`ETag` headers in `data/raw/PROVENANCE.json`, so every figure
 traces to an exact snapshot of the source.

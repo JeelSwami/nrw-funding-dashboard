@@ -2,6 +2,8 @@
 
 [English](README.md) · **Deutsch**
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21841052.svg)](https://doi.org/10.5281/zenodo.21841052)
+
 **Live-Demo: [nrw-funding-dashboard.streamlit.app](https://nrw-funding-dashboard.streamlit.app)**
 
 Ein interaktives Dashboard, das jede EU-Forschungsförderung nachzeichnet, die
@@ -56,7 +58,9 @@ des Förderatlas 2024 der Deutschen Forschungsgemeinschaft entnommen und mit
 Quellenangabe wiedergegeben. Die Kartengrundlage nutzt CARTO-Basiskarten
 mit OpenStreetMap-Daten; die Attribution erfolgt in der Karte selbst. Der
 Quellcode dieses Repositoriums steht unter MIT-Lizenz; die Daten
-unterliegen weiterhin den Bedingungen ihrer jeweiligen Anbieter. `src/fetch_cordis.py` protokolliert den Abrufzeitpunkt sowie
+unterliegen weiterhin den Bedingungen ihrer jeweiligen Anbieter. Releases
+werden auf Zenodo archiviert und sind zitierbar über
+[doi.org/10.5281/zenodo.21841052](https://doi.org/10.5281/zenodo.21841052). `src/fetch_cordis.py` protokolliert den Abrufzeitpunkt sowie
 die `Last-Modified`-/`ETag`-Header des Servers in
 `data/raw/PROVENANCE.json`, sodass jede Zahl auf einen exakten Stand der
 Quelle zurückführbar ist.
