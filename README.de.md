@@ -6,13 +6,13 @@
 
 Ein interaktives Dashboard, das jede EU-Forschungsförderung nachzeichnet, die
 unter Horizon 2020 (2014–2020) und Horizon Europe (2021–2027) an
-Einrichtungen in Nordrhein-Westfalen (NRW) geflossen ist — aufgebaut aus den
+Einrichtungen in Nordrhein-Westfalen (NRW) geflossen ist, aufgebaut aus den
 offiziellen CORDIS-Datensätzen des Amts für Veröffentlichungen der EU.
 
 Zum Datenstand August 2026 haben die beiden Rahmenprogramme
 **3,71 Mrd. €** für **1.128 NRW-Einrichtungen** in **5.097 Projekten**
-zugesagt — **18,6 %** der 20,0 Mrd. €, die insgesamt nach Deutschland
-gingen. Köln führt die Rangliste an (begünstigt durch den Rechtssitz des
+zugesagt, das sind **18,6 %** der 19,9 Mrd. €, die insgesamt nach
+Deutschland gingen. Köln führt die Rangliste an (begünstigt durch den Rechtssitz des
 DLR), gefolgt von Bonn, Aachen und Jülich; Natur- und
 Ingenieurwissenschaften vereinen zusammen mehr als die Hälfte der nach
 Wissenschaftsfeldern zugeordneten Mittel.
@@ -45,12 +45,15 @@ CORDIS-Projektseiten sowie eine optionale Tabellenansicht zu jedem Diagramm.
 | CORDIS – EU-Forschungsprojekte unter Horizon 2020 | 2014–2020 | [data.europa.eu](https://data.europa.eu/data/datasets/cordish2020projects) |
 | Eurostat – Bevölkerung am 1. Januar nach NUTS-Regionen (demo_r_d2jan) | Bevölkerung der Länder | [ec.europa.eu/eurostat](https://ec.europa.eu/eurostat/databrowser/product/view/demo_r_d2jan) |
 | DFG-Förderatlas 2024 – Bewilligungen nach Hochschulen und Ländern | DFG-Bewilligungen 2020–2022 | [foerderatlas.dfg.de](https://foerderatlas.dfg.de/daten/) |
+| GeoNames – Postleitzahlenregister (DE) | PLZ-Bundesland-Zuordnung, Zentroide | [geonames.org](https://download.geonames.org/export/zip/) |
 
 Die CORDIS-Datensätze werden vom Amt für Veröffentlichungen der EU
 publiziert; die Weiterverwendung ist gemäß
 [Beschluss 2011/833/EU der Kommission](http://data.europa.eu/eli/dec/2011/833/oj)
-mit Quellenangabe gestattet. Eurostat-Daten werden unter CC BY 4.0
-nachgenutzt. `src/fetch_cordis.py` protokolliert den Abrufzeitpunkt sowie
+mit Quellenangabe gestattet. Eurostat- und GeoNames-Daten werden unter
+CC BY 4.0 nachgenutzt. Die DFG-Zahlen sind den veröffentlichten Tabellen
+des Förderatlas 2024 der Deutschen Forschungsgemeinschaft entnommen und mit
+Quellenangabe wiedergegeben. `src/fetch_cordis.py` protokolliert den Abrufzeitpunkt sowie
 die `Last-Modified`-/`ETag`-Header des Servers in
 `data/raw/PROVENANCE.json`, sodass jede Zahl auf einen exakten Stand der
 Quelle zurückführbar ist.
@@ -62,7 +65,7 @@ haben; der Push löst automatisch ein erneutes Deployment der Live-App aus.
 
 ## Methodik
 
-- **Untersuchungseinheit.** Eine Zeile ist eine *Beteiligung* — die Rolle
+- **Untersuchungseinheit.** Eine Zeile ist eine *Beteiligung*: die Rolle
   einer Einrichtung in einem Projekt. Eine Einrichtung mit zehn Projekten
   trägt zehn Zeilen bei. Die Kennzahlen aggregieren `ecContribution`, den
   zugesagten EU-Finanzbeitrag an die jeweilige Beteiligte.
@@ -70,9 +73,9 @@ haben; der Push löst automatisch ein erneutes Deployment der Live-App aus.
   Postleitzahl der registrierten Adresse validiert, aufgelöst über das
   [GeoNames-Postleitzahlenregister](https://download.geonames.org/export/zip/)
   (CC BY 4.0). Stimmen beide überein, gilt der NUTS-Code; bei Widerspruch
-  gewinnt die Postleitzahl — manche CORDIS-Versionen enthalten fehlerhafte
-  NUTS-Codes und Geokoordinaten (die Version vom August 2026 ordnete
-  Einrichtungen aus Köln, Jülich und München Berlin zu). Koordinaten, die
+  gewinnt die Postleitzahl, denn manche CORDIS-Versionen enthalten
+  fehlerhafte NUTS-Codes und Geokoordinaten (die Version vom August 2026
+  ordnete Einrichtungen aus Köln, Jülich und München Berlin zu). Koordinaten, die
   mehr als ~0,7° vom PLZ-Zentroid abweichen, werden ebenfalls durch das
   Zentroid ersetzt. Zeilen ohne beide Signale fallen auf einen Abgleich des
   Städtenamens zurück; die verwendete Methode wird je Zeile protokolliert,
@@ -98,7 +101,7 @@ haben; der Push löst automatisch ein erneutes Deployment der Live-App aus.
 - Beiträge sind Zusagen bei Vertragsunterzeichnung, keine endgültigen
   Zahlungen.
 - Einrichtungen mit mehreren Standorten werden an der registrierten Adresse
-  gezählt — in der Regel dem Rechtssitz. Die rund 600 Mio. € des DLR etwa
+  gezählt, in der Regel dem Rechtssitz. Die rund 660 Mio. € des DLR etwa
   werden Köln zugerechnet, obwohl seine Institute über ganz Deutschland
   verteilt sind.
 - Horizon Europe läuft noch; junge Startjahre sind systembedingt

@@ -432,9 +432,11 @@ st.plotly_chart(dfg_fig, config={"displayModeBar": False})
 st.caption(
     "NRW universities in the DFG Förderatlas top 40, matched to their EU "
     "funding over the same 2020–2022 window (university hospitals counted "
-    "with their university on both sides). DFG figures are awards "
+    "with their university on both sides). The Förderatlas appears every "
+    "three years; the 2024 edition, the most recent, reports 2020–2022. "
+    "DFG figures are awards "
     "(Bewilligungen); EU figures are committed contributions for projects "
-    "starting in the window — related but not identical concepts. "
+    "starting in the window; the two are related but not identical concepts. "
     "© Deutsche Forschungsgemeinschaft, Förderatlas 2024. The filter row "
     "does not apply here.")
 if show_tables:
@@ -514,7 +516,7 @@ st.caption(
     "scales with the number of shared projects. The overview shows the ten "
     "largest NRW recipients with their six strongest partners each; choose "
     "an organisation above to see its fifteen strongest partnerships. Based "
-    "on all years and both programmes — the filter row does not apply.")
+    "on all years and both programmes; the filter row does not apply.")
 if show_tables:
     st.dataframe(ev[["nrw_org", "partner", "partner_country",
                      "joint_projects"]]
@@ -620,17 +622,18 @@ published by the EU Publications Office. Reuse is permitted under
 [Commission Decision 2011/833/EU](http://data.europa.eu/eli/dec/2011/833/oj)
 with attribution. Retrieval details are recorded in `data/raw/PROVENANCE.json`.
 
-**Unit of analysis.** One row is one *participation* - one organisation's role
+**Unit of analysis.** One row is one *participation*: one organisation's role
 in one project. Figures aggregate the EU's committed contribution
 (`ecContribution`) per participation; grants signed but later reduced or
-terminated are counted at their recorded value.
+terminated are counted at their recorded value. Throughout the dashboard,
+*bn* denotes the English billion, 10⁹ (German: Milliarde).
 
 **Land attribution.** Each participation's Eurostat NUTS code is
 cross-validated against the postal code of its registered address, resolved
 through the [GeoNames postal register](https://download.geonames.org/export/zip/)
 (CC BY 4.0). When both agree the NUTS code stands; when they disagree the
 postal code wins, because it is part of the organisation's own registered
-address — some CORDIS releases carry corrupted NUTS codes (the August 2026
+address. Some CORDIS releases carry corrupted NUTS codes (the August 2026
 release stamped organisations from Köln, Jülich and München with the Berlin
 code `DE300`). In this build, {s.get('land_nuts_plz_conflicts', 0):,} of
 {s['german_participations']:,} German rows had such a conflict, of which
@@ -657,7 +660,7 @@ figures for the comparison are contributions committed to projects starting
 2020–2022. On both sides a university group includes its university
 hospital; legally separate affiliated institutes are excluded. Awards and
 commitments are related but distinct measures, and the DFG funds
-individuals and infrastructure in ways the EU does not — the comparison
+individuals and infrastructure in ways the EU does not; the comparison
 shows orders of magnitude and shares, not a like-for-like ledger.
 
 **Per-inhabitant comparison.** Population figures come from Eurostat,

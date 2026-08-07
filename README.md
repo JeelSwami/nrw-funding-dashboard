@@ -10,8 +10,9 @@ and Horizon Europe (2021–2027), built from the official CORDIS bulk datasets
 of the EU Publications Office.
 
 At the August 2026 data snapshot, the two framework programmes committed
-**€3.71 billion** to **1,128 NRW organisations** across **5,097 projects** —
-**18.6 %** of the €20.0 billion that went to Germany as a whole. Köln leads
+**€3.71 billion** to **1,128 NRW organisations** across **5,097 projects**,
+which is **18.6 %** of the €19.9 billion that went to Germany as a whole.
+Köln leads
 the state (helped by DLR's legal seat there), followed by Bonn, Aachen and
 Jülich; natural sciences and engineering together account for over half of
 the field-attributed funding.
@@ -44,10 +45,13 @@ table view for every chart.
 | CORDIS – EU research projects under Horizon 2020 | 2014–2020 | [data.europa.eu](https://data.europa.eu/data/datasets/cordish2020projects) |
 | Eurostat – population on 1 January by NUTS region (demo_r_d2jan) | Länder populations | [ec.europa.eu/eurostat](https://ec.europa.eu/eurostat/databrowser/product/view/demo_r_d2jan) |
 | DFG Förderatlas 2024 – awards by university and by Land | DFG awards 2020–2022 | [foerderatlas.dfg.de](https://foerderatlas.dfg.de/daten/) |
+| GeoNames – postal code register (DE) | postcode-to-Land mapping, centroids | [geonames.org](https://download.geonames.org/export/zip/) |
 
 The CORDIS datasets are published by the EU Publications Office; reuse is
 permitted under [Commission Decision 2011/833/EU](http://data.europa.eu/eli/dec/2011/833/oj)
-with attribution. Eurostat data is reused under CC BY 4.0.
+with attribution. Eurostat and GeoNames data are reused under CC BY 4.0.
+The DFG figures are taken from the published Förderatlas 2024 tables of the
+Deutsche Forschungsgemeinschaft and are reproduced with attribution.
 `src/fetch_cordis.py` records the retrieval timestamp and the server's
 `Last-Modified`/`ETag` headers in `data/raw/PROVENANCE.json`, so every figure
 traces to an exact snapshot of the source.
@@ -59,7 +63,7 @@ automatic redeployment of the live app.
 
 ## Methodology
 
-- **Unit of analysis.** One row is one *participation* — one organisation's
+- **Unit of analysis.** One row is one *participation*: one organisation's
   role in one project. An organisation active in ten projects contributes ten
   rows. Figures aggregate `ecContribution`, the EU's committed financial
   contribution to that participant.
@@ -67,8 +71,8 @@ automatic redeployment of the live app.
   against the postal code of the registered address, resolved through the
   [GeoNames postal register](https://download.geonames.org/export/zip/)
   (CC BY 4.0). When they agree the NUTS code stands; when they disagree the
-  postal code wins — some CORDIS releases carry corrupted NUTS codes and
-  geolocations (the August 2026 release stamped organisations from Köln,
+  postal code wins, because some CORDIS releases carry corrupted NUTS codes
+  and geolocations (the August 2026 release stamped organisations from Köln,
   Jülich and München as Berlin). Coordinates further than ~0.7° from the
   postcode centroid are likewise replaced by that centroid. Rows with
   neither signal fall back to a city-name match; the method used is
@@ -92,8 +96,8 @@ automatic redeployment of the live app.
 
 - Contributions are commitments at grant signature, not final payments.
 - Multi-site organisations are counted at the address registered for the
-  participation — usually the legal seat. DLR's €600 m, for example, is
-  credited to Köln although its institutes span Germany.
+  participation, usually the legal seat. DLR's roughly €660 m, for example,
+  are credited to Köln although its institutes span Germany.
 - Horizon Europe is a running programme; recent start years are incomplete
   by construction and grow with every CORDIS release.
 
