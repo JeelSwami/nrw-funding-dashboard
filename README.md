@@ -52,6 +52,9 @@ permitted under [Commission Decision 2011/833/EU](http://data.europa.eu/eli/dec/
 with attribution. Eurostat and GeoNames data are reused under CC BY 4.0.
 The DFG figures are taken from the published Förderatlas 2024 tables of the
 Deutsche Forschungsgemeinschaft and are reproduced with attribution.
+The map background uses CARTO basemaps with OpenStreetMap data, attributed
+on the map itself. The source code of this repository is MIT-licensed; the
+data remains subject to the terms of its respective providers.
 `src/fetch_cordis.py` records the retrieval timestamp and the server's
 `Last-Modified`/`ETag` headers in `data/raw/PROVENANCE.json`, so every figure
 traces to an exact snapshot of the source.
