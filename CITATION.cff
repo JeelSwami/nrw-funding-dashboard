@@ -5,12 +5,12 @@ title: "EU research funding flow in North Rhine-Westphalia, Germany"
 authors:
   - family-names: Swami
     given-names: Jeel
-version: 1.0.0
-date-released: 2026-08-07
+version: 1.1.0
+date-released: 2026-08-08
 doi: 10.5281/zenodo.21841052
 url: "https://nrw-funding-dashboard.streamlit.app"
 repository-code: "https://github.com/JeelSwami/nrw-funding-dashboard"
-license: MIT
+license: CC-BY-NC-4.0
 keywords:
   - research funding
   - Horizon Europe

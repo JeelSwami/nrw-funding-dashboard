@@ -151,7 +151,10 @@ with st.sidebar:
         "organisations in North Rhine-Westphalia under Horizon 2020 and "
         "Horizon Europe, from the official CORDIS bulk datasets. Methodology, "
         "sources and limitations are documented at the bottom of the page.\n\n"
-        f"[Source code & data pipeline]({REPO_URL})"
+        f"[Source code & data pipeline]({REPO_URL})\n\n"
+        "License: [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) "
+        "(non-commercial use with attribution; data remains under its "
+        "providers' terms)"
     )
     st.caption(f"Data snapshot: {snapshot or 'see data/raw/PROVENANCE.json'}")
 st.caption(
