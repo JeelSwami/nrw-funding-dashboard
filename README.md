@@ -36,12 +36,17 @@ table view for every chart.
 | CORDIS – EU research projects under Horizon 2020 | 2014–2020 | [data.europa.eu](https://data.europa.eu/data/datasets/cordish2020projects) |
 | Eurostat – population on 1 January by NUTS region (demo_r_d2jan) | Länder populations | [ec.europa.eu/eurostat](https://ec.europa.eu/eurostat/databrowser/product/view/demo_r_d2jan) |
 
-Both datasets are published by the EU Publications Office; reuse is permitted
-under [Commission Decision 2011/833/EU](http://data.europa.eu/eli/dec/2011/833/oj)
-with attribution. `src/fetch_cordis.py` records the retrieval timestamp and
-the server's `Last-Modified`/`ETag` headers in `data/raw/PROVENANCE.json`, so
-every figure traces to an exact snapshot of the source (currently
-21 July 2026).
+The CORDIS datasets are published by the EU Publications Office; reuse is
+permitted under [Commission Decision 2011/833/EU](http://data.europa.eu/eli/dec/2011/833/oj)
+with attribution. Eurostat data is reused under CC BY 4.0.
+`src/fetch_cordis.py` records the retrieval timestamp and the server's
+`Last-Modified`/`ETag` headers in `data/raw/PROVENANCE.json`, so every figure
+traces to an exact snapshot of the source.
+
+A GitHub Actions workflow ([data-refresh.yml](.github/workflows/data-refresh.yml))
+re-runs the pipeline on the 3rd of every month and commits the rebuilt
+dataset only when the sources actually changed; the push triggers an
+automatic redeployment of the live app.
 
 ## Methodology
 
@@ -89,4 +94,3 @@ data/processed/           Parquet files + machine-generated build summary
   is the DFG's published funding tables, which would put national and EU
   funding side by side.
 - Collaboration-network view of NRW organisations and their EU partners.
-- Automated monthly data refresh via GitHub Actions.
