@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this dashboard or its data pipeline, please cite it as below."
+type: software
+title: "EU research funding flow in North Rhine-Westphalia, Germany"
+authors:
+  - family-names: Swami
+    given-names: Jeel
+version: 1.0.0
+date-released: 2026-08-07
+url: "https://nrw-funding-dashboard.streamlit.app"
+repository-code: "https://github.com/JeelSwami/nrw-funding-dashboard"
+license: MIT
+keywords:
+  - research funding
+  - Horizon Europe
+  - Horizon 2020
+  - CORDIS
+  - DFG
+  - North Rhine-Westphalia
+  - open data
