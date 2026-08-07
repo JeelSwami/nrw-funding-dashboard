@@ -110,11 +110,26 @@ def org_display(label: str, max_len: int = 36) -> str:
     return label
 
 
+REPO_URL = "https://github.com/JeelSwami/nrw-funding-dashboard"
+APP_URL = "https://nrw-funding-dashboard.streamlit.app"
+
 de, fields, summary = load()
 nrw_all = de[de["is_nrw"]]
 
 st.title("Where does EU research funding flow in North Rhine-Westphalia?")
 snapshot = summary["provenance"].get("HORIZON", {}).get("last_modified", "")
+
+with st.sidebar:
+    st.markdown("### About")
+    st.markdown(
+        "Built and maintained by **Jeel Swami**.\n\n"
+        "This dashboard traces the EU's committed research funding to "
+        "organisations in North Rhine-Westphalia under Horizon 2020 and "
+        "Horizon Europe, from the official CORDIS bulk datasets. Methodology, "
+        "sources and limitations are documented at the bottom of the page.\n\n"
+        f"[Source code & data pipeline]({REPO_URL})"
+    )
+    st.caption(f"Data snapshot: {snapshot or 'see data/raw/PROVENANCE.json'}")
 st.caption(
     "Source: CORDIS bulk datasets (Horizon 2020 & Horizon Europe), "
     "EU Publications Office · reuse under Commission Decision 2011/833/EU · "
@@ -218,6 +233,48 @@ with c2:
     if show_tables:
         st.dataframe(top_cities.rename("EUR").map(eur))
 
+# --- Map --------------------------------------------------------------------
+st.subheader("Where the money lands")
+geo = nrw[nrw["geolocation"].notna()].copy()
+geo["geolocation"] = geo["geolocation"].str.strip("() ")
+geo = geo[geo["geolocation"].str.contains(",", na=False)]
+if len(geo):
+    pts = (geo.groupby("organisationID")
+           .agg(org_label=("org_label", "first"),
+                city=("city_display", "first"),
+                geolocation=("geolocation", "first"),
+                ec=("ecContribution", "sum"))
+           .reset_index())
+    latlon = pts["geolocation"].str.split(",", expand=True)
+    pts["lat"] = pd.to_numeric(latlon[0], errors="coerce")
+    pts["lon"] = pd.to_numeric(latlon[1], errors="coerce")
+    pts = pts.dropna(subset=["lat", "lon"])
+    pts = pts[pts["ec"] > 0]
+    map_fig = go.Figure(go.Scattermap(
+        lat=pts["lat"], lon=pts["lon"], mode="markers",
+        marker=dict(size=pts["ec"], sizemode="area",
+                    sizeref=2.0 * float(pts["ec"].max()) / (44 ** 2),
+                    sizemin=4, color=BLUE, opacity=0.7),
+        text=[f"{org_display(o)} · {c}<br>{eur(v)}"
+              for o, c, v in zip(pts["org_label"], pts["city"], pts["ec"])],
+        hovertemplate="%{text}<extra></extra>",
+    ))
+    map_fig.update_layout(
+        map=dict(style="carto-positron",
+                 center=dict(lat=51.35, lon=7.45), zoom=6.8),
+        height=460, paper_bgcolor=SURFACE,
+        margin=dict(l=8, r=8, t=8, b=8),
+        font=dict(family=FONT, color=INK_2),
+        hoverlabel=dict(bgcolor="#ffffff", font=dict(family=FONT, color=INK)),
+    )
+    st.plotly_chart(map_fig, config={"displayModeBar": False})
+    n_missing = int(nrw["organisationID"].nunique() - pts["organisationID"].nunique())
+    st.caption("Marker area is proportional to the EU contribution received "
+               "at that registered address. "
+               f"{len(pts):,} organisations shown; {n_missing:,} without "
+               "usable coordinates in CORDIS are omitted here (they remain in "
+               "all other figures).")
+
 # --- Two-column: fields and organisation types ------------------------------
 c3, c4 = st.columns(2)
 with c3:
@@ -278,6 +335,30 @@ st.dataframe(
 )
 st.caption(f"{len(table):,} participations shown (largest first, capped at "
            "500). Each row is one organisation's participation in one project.")
+
+# --- Data & citation --------------------------------------------------------
+st.subheader("Data & citation")
+export = (nrw[["programme", "projectID", "acronym", "title", "name",
+               "city_display", "activity_label", "role", "start_year",
+               "ecContribution", "netEcContribution", "nutsCode"]]
+          .rename(columns={"city_display": "city",
+                           "activity_label": "organisation_type"}))
+d1, d2 = st.columns([1, 2])
+with d1:
+    st.download_button(
+        "Download filtered data (CSV)",
+        data=export.to_csv(index=False).encode("utf-8"),
+        file_name="nrw_eu_funding_filtered.csv", mime="text/csv",
+        help="The NRW participations matching the current filters, "
+             "one row per organisation per project.")
+    st.caption(f"{len(export):,} rows under the current filters.")
+with d2:
+    snap_short = " ".join(snapshot.split()[1:4]) if snapshot else "latest"
+    st.code(
+        "Swami, J. (2026). Where does EU research funding flow\n"
+        "in North Rhine-Westphalia? Interactive dashboard.\n"
+        f"Data: CORDIS, EU Publications Office (snapshot {snap_short}).\n"
+        f"{APP_URL}", language=None)
 
 # --- Methodology ------------------------------------------------------------
 with st.expander("Methodology, sources and limitations"):

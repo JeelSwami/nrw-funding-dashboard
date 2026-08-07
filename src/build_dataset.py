@@ -48,7 +48,7 @@ ARCHIVES = {
 
 ORG_COLS = [
     "projectID", "organisationID", "name", "shortName", "SME", "activityType",
-    "postCode", "city", "country", "nutsCode", "role",
+    "postCode", "city", "country", "nutsCode", "geolocation", "role",
     "ecContribution", "netEcContribution",
 ]
 PROJECT_COLS = [
