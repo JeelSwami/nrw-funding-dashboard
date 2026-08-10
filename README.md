@@ -3,8 +3,14 @@
 **English** · [Deutsch](README.de.md)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21841052.svg)](https://doi.org/10.5281/zenodo.21841052)
+![Python](https://img.shields.io/badge/Python-3.9+-blue)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.40+-ff4b4b)
+![pandas](https://img.shields.io/badge/pandas-2.2+-150458)
+![Plotly](https://img.shields.io/badge/Plotly-5.24+-3f4f75)
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+[![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey)](LICENSE)
 
-**Live demo: [nrw-funding-dashboard.streamlit.app](https://nrw-funding-dashboard.streamlit.app)**
+**Deployed at: [nrw-funding-dashboard.streamlit.app](https://nrw-funding-dashboard.streamlit.app)**
 
 An interactive dashboard tracing every EU research grant that reached an
 organisation in North Rhine-Westphalia (NRW) under Horizon 2020 (2014–2020)
