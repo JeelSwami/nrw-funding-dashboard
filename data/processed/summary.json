@@ -1,43 +1,43 @@
 {
-  "built_utc": "2026-08-07T13:29:02+00:00",
+  "built_utc": "2026-10-03T10:51:54+00:00",
   "provenance": {
     "HORIZON": {
       "url": "https://cordis.europa.eu/data/cordis-HORIZONprojects-csv.zip",
       "file": "cordis-HORIZONprojects-csv.zip",
-      "retrieved_utc": "2026-08-07T13:16:42+00:00",
-      "last_modified": "Thu, 06 Aug 2026 14:02:10 GMT",
-      "etag": "\"6a7493e2-22f920f\"",
-      "content_length": "36672015"
+      "retrieved_utc": "2026-10-03T10:51:37+00:00",
+      "last_modified": "Tue, 22 Sep 2026 07:47:28 GMT",
+      "etag": "\"6ab23290-2332fc6\"",
+      "content_length": "36908998"
     },
     "H2020": {
       "url": "https://cordis.europa.eu/data/cordis-h2020projects-csv.zip",
       "file": "cordis-h2020projects-csv.zip",
-      "retrieved_utc": "2026-08-07T13:16:49+00:00",
-      "last_modified": "Thu, 06 Aug 2026 14:04:05 GMT",
-      "etag": "\"6a749455-34ad42a\"",
-      "content_length": "55235626"
+      "retrieved_utc": "2026-10-03T10:51:47+00:00",
+      "last_modified": "Tue, 22 Sep 2026 07:46:58 GMT",
+      "etag": "\"6ab23272-34a9432\"",
+      "content_length": "55219250"
     }
   },
-  "german_participations": 36985,
-  "nrw_participations": 6667,
+  "german_participations": 37084,
+  "nrw_participations": 6689,
   "nrw_matched_by_city_fallback": 10,
-  "land_nuts_plz_conflicts": 3767,
-  "nrw_recovered_from_nuts_conflicts": 1419,
-  "nrw_recovered_ec_eur": 1140192249.13,
-  "coords_repaired": 4102,
-  "german_rows_without_land": 278,
-  "nrw_projects": 5097,
-  "nrw_organisations": 1128,
-  "nrw_ec_contribution_eur": 3705890653.1,
-  "german_ec_contribution_eur": 19948133777.7,
+  "land_nuts_plz_conflicts": 3910,
+  "nrw_recovered_from_nuts_conflicts": 1439,
+  "nrw_recovered_ec_eur": 1146995286.1999998,
+  "coords_repaired": 4516,
+  "german_rows_without_land": 243,
+  "nrw_projects": 5113,
+  "nrw_organisations": 1129,
+  "nrw_ec_contribution_eur": 3713105879.3799996,
+  "german_ec_contribution_eur": 20005316609.34,
   "by_programme": {
     "Horizon 2020": {
-      "nrw_participations": 3837,
-      "nrw_ec_contribution_eur": 1880441417.4299998
+      "nrw_participations": 3839,
+      "nrw_ec_contribution_eur": 1880646713.1399999
     },
     "Horizon Europe": {
-      "nrw_participations": 2830,
-      "nrw_ec_contribution_eur": 1825449235.67
+      "nrw_participations": 2850,
+      "nrw_ec_contribution_eur": 1832459166.24
     }
   }
 }
